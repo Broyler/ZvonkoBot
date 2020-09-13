@@ -1,0 +1,45 @@
+{
+  "REGISTER_CLASS": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["7", "PRIMARY"],
+        ["8", "PRIMARY"],
+        ["9", "PRIMARY"]
+      ],
+      [
+        ["10", "PRIMARY"],
+        ["11", "PRIMARY"]
+      ]
+    ]
+  },
+
+  "REGISTER_PUSH": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["Да", "POSITIVE"]
+      ],
+      [
+        ["Нет", "NEGATIVE"]
+      ]
+    ]
+  },
+
+  "EMPTY": {
+    "one_time": true,
+    "buttons": []
+  },
+
+  "MENU": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["Расписание", "POSITIVE"]
+      ],
+      [
+        ["Настройки", "DEFAULT"]
+      ]
+    ]
+  }
+}
