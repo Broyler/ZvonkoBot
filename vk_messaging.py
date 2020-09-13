@@ -1,5 +1,5 @@
-from ZvonkoBot.const import settings, color_values
-from ZvonkoBot.utils import file_system
+from const import settings, color_values
+from utils import file_system
 
 from random import randint
 from sys import exit

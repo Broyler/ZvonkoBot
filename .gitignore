@@ -8,6 +8,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+json/admins.json
+json/vk_users.json
+const/settings.py
+.idea/
 build/
 develop-eggs/
 dist/
