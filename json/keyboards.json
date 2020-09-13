@@ -3,13 +3,13 @@
     "one_time": false,
     "buttons": [
       [
-        ["7", "PRIMARY"],
-        ["8", "PRIMARY"],
-        ["9", "PRIMARY"]
+        ["7", "BLUE"],
+        ["8", "BLUE"],
+        ["9", "BLUE"]
       ],
       [
-        ["10", "PRIMARY"],
-        ["11", "PRIMARY"]
+        ["10", "BLUE"],
+        ["11", "BLUE"]
       ]
     ]
   },
@@ -18,10 +18,10 @@
     "one_time": false,
     "buttons": [
       [
-        ["Да", "POSITIVE"]
+        ["Да", "GREEN"]
       ],
       [
-        ["Нет", "NEGATIVE"]
+        ["Нет", "RED"]
       ]
     ]
   },
@@ -35,10 +35,10 @@
     "one_time": false,
     "buttons": [
       [
-        ["Расписание", "POSITIVE"]
+        ["Расписание", "GREEN"]
       ],
       [
-        ["Настройки", "DEFAULT"]
+        ["Настройки", "WHITE"]
       ]
     ]
   }

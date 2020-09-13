@@ -1,8 +1,8 @@
 from vk_api.keyboard import VkKeyboardColor
 
 colors = {
-    "PRIMARY": VkKeyboardColor.PRIMARY,
-    "POSITIVE": VkKeyboardColor.POSITIVE,
-    "NEGATIVE": VkKeyboardColor.NEGATIVE,
-    "DEFAULT": VkKeyboardColor.DEFAULT
+    "BLUE": VkKeyboardColor.PRIMARY,
+    "GREEN": VkKeyboardColor.POSITIVE,
+    "RED": VkKeyboardColor.NEGATIVE,
+    "WHITE": VkKeyboardColor.SECONDARY
 }
