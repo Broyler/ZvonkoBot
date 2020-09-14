@@ -79,6 +79,8 @@ class Server:
         else:
             return 0
 
+    # Todo: сделать функцию на сегодняшнее расписание
+
     def start(self):
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -136,6 +138,10 @@ class Server:
                             self.send_keyboard(data['from_id'], 'MENU',
                                                file_system.read('messages')['REGISTER_COMPLETE'])
                             self.send_subscribe(data['from_id'])
+
+                    elif int(user['state']) == file_system.read('states')['IDLE']:
+                        # Todo: создать обработчик быстрого меню
+                        pass
 
                 else:
                     file_system.new_user(str(data['from_id']))
