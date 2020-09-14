@@ -3,6 +3,7 @@ from utils import file_system
 
 from random import randint
 from sys import exit
+import datetime
 
 import vk_api.vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
@@ -79,7 +80,38 @@ class Server:
         else:
             return 0
 
-    # Todo: сделать функцию на сегодняшнее расписание
+    def send_table_today(self, user_id):
+        user = file_system.read('vk_users').get(str(user_id))
+        weekday = datetime.datetime.now().weekday()
+        today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
+
+        message = ''
+
+        for lesson_index, lesson in enumerate(today_table):
+            temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
+            times = [
+                str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index]),
+                str(file_system.read('calls')[str(user['class'])]['from_lesson'][lesson_index]),
+                str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute))
+            ]
+
+            for time_index, element in enumerate(times):
+                if element[-2] == ':':
+                    times[time_index] = element[0:-2] + ':0' + element[-1]
+
+                if element[1] == ':':
+                    times[time_index] = '0' + times[time_index]
+
+            temp_message = times[0] + ' - ' + temp_message + '\n'
+
+            if times[2] >= times[1]:
+                for char in temp_message:
+                    message += '&#0822;' + char
+
+            else:
+                message += temp_message
+
+        self.send(user_id, message)
 
     def start(self):
         for event in self.long_poll.listen():
@@ -141,7 +173,9 @@ class Server:
 
                     elif int(user['state']) == file_system.read('states')['IDLE']:
                         # Todo: создать обработчик быстрого меню
-                        pass
+
+                        if data['text'] == file_system.read('keyboards')['MENU']['buttons'][0][0][0]:
+                            self.send_table_today(str(data['from_id']))
 
                 else:
                     file_system.new_user(str(data['from_id']))
