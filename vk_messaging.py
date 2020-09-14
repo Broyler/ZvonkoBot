@@ -113,17 +113,33 @@ class Server:
 
         self.send(user_id, message)
 
+    def send_table_week(self, user_id):
+        user = file_system.read('vk_users').get(str(user_id))
+        table = file_system.read('table')[str(user['class'])][user['letter']]
+        message = ''
+
+        for day in table:
+            message += file_system.read('messages')['WEEKDAYS'][datetime.datetime.now().weekday()] + '\n'
+
+            for lesson in day:
+                temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
+                message += temp_message + '\n'
+
+            message += '\n'
+
+        self.send(user_id, message)
+
     def start(self):
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 data = event.object.get('message')
 
                 if data['text'] == 'admin:stop_bot' and data['from_id'] in file_system.read('admins'):
-                    print('[exit] Администратор ' + str(data['from_id']) + ' остановил работу бота.')
+                    file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' остановил бота.')
                     exit(0)
 
                 elif data['text'] == 'admin:reset_users' and data['from_id'] in file_system.read('admins'):
-                    print('[log] Администратор ' + str(data['from_id']) + ' сбросил пользователей.')
+                    file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' сбросил пользователей.')
                     file_system.write('vk_users', {})
 
                 if str(data['from_id']) in file_system.read('vk_users'):
@@ -172,12 +188,16 @@ class Server:
                             self.send_subscribe(data['from_id'])
 
                     elif int(user['state']) == file_system.read('states')['IDLE']:
-                        # Todo: создать обработчик быстрого меню
-
                         if data['text'] == file_system.read('keyboards')['MENU']['buttons'][0][0][0]:
                             self.send_table_today(str(data['from_id']))
 
+                        elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][0][1][0]:
+                            self.send_table_next(str(data['from_id']))
+
+                        # Todo: создать остальную часть меню
+
                 else:
+                    file_system.log('users', 'Зарегистрирован ID ' + str(data['from_id']))
                     file_system.new_user(str(data['from_id']))
                     self.send_keyboard(
                         data['from_id'],

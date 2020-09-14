@@ -12,6 +12,7 @@ json/admins.json
 json/vk_users.json
 const/settings.py
 .idea/
+logs/
 build/
 develop-eggs/
 dist/

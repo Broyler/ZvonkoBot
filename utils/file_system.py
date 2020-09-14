@@ -7,7 +7,7 @@ def read(filename):
             return loads(file.read())
 
     except FileNotFoundError:
-        print('[error] No such file or directory: ' + filename)
+        log('log', '[error] Файл ' + filename + ' не найден (код 5)')
         return None
 
 
@@ -16,8 +16,8 @@ def write(filename, value):
         with open('json/'+filename+'.json', 'w', encoding='utf-8') as file:
             file.write(dumps(value))
 
-    except ValueError:
-        print('[error] Value is incorrect')
+    except KeyError:
+        log('log', '[error] Ключ не найден (код 4)')
         return None
 
     else:
@@ -35,8 +35,8 @@ def new_user(user_id):
         }
         write('vk_users', users)
 
-    except IndexError:
-        print('[error] Invalid element index')
+    except KeyError:
+        log('log', '[error] Ключ не найден (код 3)')
         return None
 
     else:
@@ -49,8 +49,21 @@ def update_user(user_id, field, value):
         users[user_id][field] = value
         write('vk_users', users)
 
-    except IndexError:
-        print('[error] Invalid element index')
+    except KeyError:
+        log('log', '[error] Ключ не найден (код 2)')
+        return None
+
+    else:
+        return 0
+
+
+def log(filename, message):
+    try:
+        with open('logs/' + filename + '.txt', 'a', encoding='utf-8') as file:
+            file.write(message + '\n')
+
+    except FileNotFoundError:
+        print('Файл не найден (код 1)')
         return None
 
     else:
