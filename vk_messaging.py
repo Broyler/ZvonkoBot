@@ -173,6 +173,38 @@ class Server:
 
         self.send(user_id, message)
 
+    def send_table_tomorrow(self, user_id):
+        user = file_system.read('vk_users').get(str(user_id))
+        weekday = datetime.datetime.now().weekday()
+
+        if weekday >= 4:
+            prefix = 'Завтра нет уроков, вот расписание на понедельник\n\n'
+            weekday = 0
+
+        else:
+            weekday += 1
+            prefix = 'Расписание уроков на ' + file_system.read('messages')['WEEKDAYS'][weekday] + '\n\n'
+
+        table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
+        message = prefix
+
+        for lesson in table:
+            temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
+            message += temp_message + '\n'
+
+        self.send(user_id, message)
+
+    def send_calls(self, user_id):
+        user = file_system.read('vk_users').get(str(user_id))
+        calls = file_system.read('calls')[str(user['class'])]
+        message = ''
+
+        for lesson_index in range(1, len(calls['to_lesson']) + 1):
+            message += str(lesson_index) + ' урок ' + calls['to_lesson'][lesson_index-1] + \
+                       '-' + calls['from_lesson'][lesson_index-1] + '\n'
+
+        self.send(user_id, message)
+
     def start(self):
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -238,7 +270,34 @@ class Server:
                         elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][0][1][0]:
                             self.send_lesson_next(str(data['from_id']))
 
-                        # Todo: создать остальную часть меню
+                        elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][1][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_TABLE'])
+                            self.send_keyboard(data['from_id'], 'TABLE_MENU', 'Чтобы вернуться обратно, нажмите '
+                                                                              'кнопку \"Отмена\"')
+
+                    elif int(user['state']) == file_system.read('states')['IDLE_TABLE']:
+                        if data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][2][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
+                            self.send_keyboard(data['from_id'], 'MENU', 'Вы успешно вернулись в меню')
+
+                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][1][0]:
+                            self.send_table_today(str(data['from_id']))
+
+                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][1][0][0]:
+                            self.send_table_week(str(data['from_id']))
+
+                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][1][1][0]:
+                            self.send_lesson_next(str(data['from_id']))
+
+                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][0][0]:
+                            self.send_table_tomorrow(str(data['from_id']))
+
+                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][2][0]:
+                            self.send_calls(str(data['from_id']))
+
+                        else:
+                            self.send(data['from_id'], file_system.read('messages')['IDLE_TABLE_WRONG'])
 
                 else:
                     file_system.log('users', 'Зарегистрирован ID ' + str(data['from_id']))
