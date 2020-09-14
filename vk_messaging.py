@@ -49,7 +49,7 @@ class Server:
             print('[error] Invalid element index')
             return None
 
-        keyboard = VkKeyboard(one_time=False)
+        keyboard = VkKeyboard()
         buttons = file_system.read('commands')['letter_select'][class_id]
 
         for button in buttons:
@@ -129,6 +129,50 @@ class Server:
 
         self.send(user_id, message)
 
+    def send_lesson_next(self, user_id):
+        user = file_system.read('vk_users').get(str(user_id))
+        weekday = datetime.datetime.now().weekday()
+        today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
+        message = ''
+
+        for lesson_index, lesson in enumerate(today_table):
+            times = [
+                str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index]),
+                str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute))
+            ]
+
+            for time_index, element in enumerate(times):
+                if element[-2] == ':':
+                    times[time_index] = element[0:-2] + ':0' + element[-1]
+
+                if element[1] == ':':
+                    times[time_index] = '0' + times[time_index]
+
+            hour_dist = int(times[0].split(':')[0]) - int(times[1].split(':')[0])
+            minute_dist = int(times[0].split(':')[1]) - int(times[1].split(':')[1])
+
+            if hour_dist <= 0 and minute_dist >= 0:
+                time_msg = str(minute_dist) + ' мин.'
+
+            else:
+                time_msg = str(hour_dist) + ' ч. ' + str(minute_dist) + ' мин.'
+
+            if hour_dist >= 0 and minute_dist >= 0:
+                if type(lesson) == list:
+                    message = 'Урок ' + lesson[0] + ', ' + lesson[1] + ' начнется через ' + time_msg
+
+                else:
+                    message = 'Урок ' + lesson + ', ' + \
+                              str(file_system.read('classrooms')[str(user['class'])][user['letter']]) + \
+                              ' начнется через ' + time_msg
+
+                break
+
+            else:
+                message = file_system.read('messages')['LESSON_NEXT_FINISHED']
+
+        self.send(user_id, message)
+
     def start(self):
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -192,7 +236,7 @@ class Server:
                             self.send_table_today(str(data['from_id']))
 
                         elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][0][1][0]:
-                            self.send_table_next(str(data['from_id']))
+                            self.send_lesson_next(str(data['from_id']))
 
                         # Todo: создать остальную часть меню
 
