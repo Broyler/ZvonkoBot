@@ -382,6 +382,52 @@ class Server:
                             self.send_keyboard_minutes(str(data['from_id']), 'Вы успешно изменили время отправки '
                                                                              'сообщения')
 
+                    elif int(user['state']) == file_system.read('states')['GAME']:
+                        if data['text'] in '12345':
+                            if file_system.read('vk_users')[str(data['from_id'])]['coins'] > 0:
+                                num = randint(1, 5)
+
+                                if data['text'] == str(num):
+                                    msg = 'Вы выиграли! Число: ' + str(num) + '\nБаланс: ' + \
+                                          str(file_system.read('vk_users')[str(data['from_id'])]['coins'] + 4) + ' (+4)'
+                                    file_system.update_user(str(data['from_id']), 'coins',
+                                                            file_system.read('vk_users')[str(data['from_id'])][
+                                                                'coins'] + 4)
+                                    self.send(data['from_id'], msg)
+
+                                else:
+                                    msg = 'Вы проиграли! Число: ' + str(num) + '\nБаланс: ' + \
+                                          str(file_system.read('vk_users')[str(data['from_id'])]['coins'] - 1) + ' (-1)'
+                                    file_system.update_user(str(data['from_id']), 'coins',
+                                                            file_system.read('vk_users')[str(data['from_id'])][
+                                                                'coins'] - 1)
+
+                                    self.send(data['from_id'], msg)
+
+                            else:
+                                self.send(data['from_id'], 'Увы, у Вас недостаточно монет для игры')
+
+                        elif data['text'] == file_system.read('keyboards')['GAME']['buttons'][1][1][0]:
+                            file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
+                            self.send_keyboard(str(data['from_id']), 'MENU', 'Вы успешно вернулись в меню')
+
+                        elif data['text'] == file_system.read('keyboards')['GAME']['buttons'][1][0][0]:
+                            msg = 'Таблица лидеров (монетки):\n'
+                            scores = []
+
+                            for user_id in file_system.read('vk_users'):
+                                user = file_system.read('vk_users')[str(user_id)]
+                                scores.append([int(user['coins']), str(user_id)])
+
+                            scores = scores[0:5]
+
+                            for score in scores:
+                                user_data = self.vk_api.users.get(user_ids=score[1])[0]
+                                msg += str(scores.index(score) + 1) + ' - ' + user_data['first_name'] + ' ' + \
+                                    user_data['last_name'] + ': ' + str(score[0]) + ' монет\n'
+
+                            self.send(data['from_id'], msg)
+
                 else:
                     file_system.log('users', 'Зарегистрирован ID ' + str(data['from_id']))
                     file_system.new_user(str(data['from_id']))
