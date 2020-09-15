@@ -275,6 +275,28 @@ class Server:
                         else:
                             self.send(data['from_id'], file_system.read('messages')['REGISTER_WRONG_LETTER'])
 
+                    elif int(user['state']) == file_system.read('states')['IDLE_SETTINGS_CLASS']:
+                        if data['text'] in file_system.read('commands')['letter_select']:
+                            file_system.update_user(str(data['from_id']), 'class', data['text'])
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_SETTINGS_LETTER'])
+                            self.send_letter_keyboard(str(data['from_id']),
+                                                      file_system.read('messages')['REGISTER_LETTER'], False)
+
+                        else:
+                            self.send(data['from_id'], file_system.read('messages')['REGISTER_WRONG_CLASS'])
+
+                    elif int(user['state'] == file_system.read('states')['IDLE_SETTINGS_LETTER']):
+                        if data['text'] in file_system.read('commands')['letter_select'][user['class']]:
+                            file_system.update_user(str(data['from_id']), 'letter', data['text'])
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_SETTINGS'])
+                            self.send_keyboard(data['from_id'], "SETTINGS_MENU",
+                                               'Вы успешно изменили свой класс')
+
+                        else:
+                            self.send(data['from_id'], file_system.read('messages')['REGISTER_WRONG_LETTER'])
+
                     elif int(user['state']) == file_system.read('states')['REGISTER_PUSH']:
                         push_set = False
 
@@ -325,19 +347,13 @@ class Server:
                             file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
                             self.send_keyboard(data['from_id'], 'MENU', 'Вы успешно вернулись в меню')
 
-                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][1][0]:
-                            self.send_table_today(str(data['from_id']))
-
                         elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][1][0][0]:
                             self.send_table_week(str(data['from_id']))
-
-                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][1][1][0]:
-                            self.send_lesson_next(str(data['from_id']))
 
                         elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][0][0]:
                             self.send_table_tomorrow(str(data['from_id']))
 
-                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][2][0]:
+                        elif data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][0][1][0]:
                             self.send_calls(str(data['from_id']))
 
                         else:
@@ -351,7 +367,7 @@ class Server:
                             file_system.read('keyboards')['SETTINGS_MENU']['buttons'][2][1][0]
                         ]
 
-                        if data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][0][0]:
+                        if data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][1][0]:
                             file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
                             self.send_keyboard(data['from_id'], 'MENU', 'Вы успешно вернулись в меню')
 
@@ -360,6 +376,11 @@ class Server:
                                                     file_system.read('states')['IDLE_SETTINGS_MINUTES'])
                             self.send_keyboard_minutes(str(data['from_id']), 'Чтобы вернуться назад нажмит кнопку '
                                                                              '\"Назад\"')
+
+                        elif data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_SETTINGS_CLASS'])
+                            self.send_keyboard(str(data['from_id']), 'REGISTER_CLASS', 'Выбери класс в котором учишься')
 
                         elif data['text'] in settings_buttons:
                             push = file_system.read('vk_users')[str(data['from_id'])]['push']
@@ -419,6 +440,7 @@ class Server:
                                 user = file_system.read('vk_users')[str(user_id)]
                                 scores.append([int(user['coins']), str(user_id)])
 
+                            scores.sort(reverse=True)
                             scores = scores[0:5]
 
                             for score in scores:

@@ -31,7 +31,8 @@ def new_user(user_id):
             "state": read('states').get('REGISTER_CLASS'),
             "class": 8,
             "letter": "а",
-            "push": [1, 0, 1, 0, 2]
+            "push": [1, 0, 1, 0, 2],
+            "coins": 10
         }
         write('vk_users', users)
 
