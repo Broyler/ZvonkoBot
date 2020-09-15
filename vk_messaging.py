@@ -23,8 +23,8 @@ class Server:
             random_id=randint(-1000, 1000)
         )
 
-    def send_keyboard(self, user_id, keyboard_id, message):
-        data = file_system.read('keyboards').get(keyboard_id)
+    def send_keyboard(self, user_id, keyboard_id, message, raw=False):
+        data = file_system.read('keyboards').get(keyboard_id) if not raw else keyboard_id
         keyboard = VkKeyboard(one_time=data['one_time'])
 
         for button_row in data['buttons']:
@@ -60,7 +60,7 @@ class Server:
 
         if cancel_btn:
             keyboard.add_line()
-            keyboard.add_button(label='Отмена', color=VkKeyboardColor.NEGATIVE)
+            keyboard.add_button(label='Назад', color=VkKeyboardColor.NEGATIVE)
 
         self.vk_api.messages.send(
             peer_id=user_id,
@@ -195,15 +195,36 @@ class Server:
         self.send(user_id, message)
 
     def send_calls(self, user_id):
-        user = file_system.read('vk_users').get(str(user_id))
+        user = file_system.read('vk_users')[str(user_id)]
         calls = file_system.read('calls')[str(user['class'])]
         message = ''
 
         for lesson_index in range(1, len(calls['to_lesson']) + 1):
-            message += str(lesson_index) + ' урок ' + calls['to_lesson'][lesson_index-1] + \
-                       '-' + calls['from_lesson'][lesson_index-1] + '\n'
+            message += str(lesson_index) + ' урок ' + calls['to_lesson'][lesson_index - 1] + \
+                       '-' + calls['from_lesson'][lesson_index - 1] + '\n'
 
         self.send(user_id, message)
+
+    def send_keyboard_minutes(self, user_id, message):
+        keyboard = file_system.read('keyboards')['MINUTES_MENU']
+        push = file_system.read('vk_users')[user_id]['push'][4]
+
+        if push == 1:
+            keyboard['buttons'][0][0][1] = "GREEN"
+
+        elif push == 2:
+            keyboard['buttons'][0][1][1] = "GREEN"
+
+        elif push == 3:
+            keyboard['buttons'][0][2][1] = "GREEN"
+
+        elif push == 4:
+            keyboard['buttons'][1][0][1] = "GREEN"
+
+        else:
+            keyboard['buttons'][1][1][1] = "GREEN"
+
+        self.send_keyboard(user_id, keyboard, message, True)
 
     def start(self):
         for event in self.long_poll.listen():
@@ -274,7 +295,13 @@ class Server:
                             file_system.update_user(str(data['from_id']), 'state',
                                                     file_system.read('states')['IDLE_TABLE'])
                             self.send_keyboard(data['from_id'], 'TABLE_MENU', 'Чтобы вернуться обратно, нажмите '
-                                                                              'кнопку \"Отмена\"')
+                                                                              'кнопку \"Назад\"')
+
+                        elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][2][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_SETTINGS'])
+                            self.send_keyboard(data['from_id'], 'SETTINGS_MENU', 'Чтобы вернуться обратно нажмите '
+                                                                                 'кнопку \"Назад\"')
 
                     elif int(user['state']) == file_system.read('states')['IDLE_TABLE']:
                         if data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][2][0][0]:
@@ -298,6 +325,30 @@ class Server:
 
                         else:
                             self.send(data['from_id'], file_system.read('messages')['IDLE_TABLE_WRONG'])
+
+                    elif int(user['state']) == file_system.read('states')['IDLE_SETTINGS']:
+                        if data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
+                            self.send_keyboard(data['from_id'], 'MENU', 'Вы успешно вернулись в меню')
+
+                        elif data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][0][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_SETTINGS_MINUTES'])
+                            self.send_keyboard_minutes(str(data['from_id']), 'Чтобы вернуться назад нажмит кнопку '
+                                                                             '\"Назад\"')
+
+                    elif int(user['state']) == file_system.read('states')['IDLE_SETTINGS_MINUTES']:
+                        if data['text'] == file_system.read('keyboards')['MINUTES_MENU']['buttons'][2][0][0]:
+                            file_system.update_user(str(data['from_id']), 'state',
+                                                    file_system.read('states')['IDLE_SETTINGS'])
+                            self.send_keyboard(data['from_id'], 'SETTINGS_MENU', 'Вы успешно вернулись в настройки')
+
+                        elif data['text'] in file_system.read('commands')['minute_select']:
+                            user_push = file_system.read('vk_users')[str(data['from_id'])]['push']
+                            user_push[4] = file_system.read('commands')['minute_select'][data['text']]
+                            file_system.update_user(str(data['from_id']), 'push', user_push)
+                            self.send_keyboard_minutes(str(data['from_id']), 'Вы успешно изменили время отправки '
+                                                                             'сообщения')
 
                 else:
                     file_system.log('users', 'Зарегистрирован ID ' + str(data['from_id']))
