@@ -7,7 +7,7 @@
   "REGISTER_LETTER": 21,
   "REGISTER_PUSH": 22,
 
-  "PUSH_STANDARD": [1, 1, 0, 1, 2],
+  "PUSH_STANDARD": [1, 0, 1, 0, 2],
   "PUSH_NORMAL": 1,
   "PUSH_DETAILED": 2
 }

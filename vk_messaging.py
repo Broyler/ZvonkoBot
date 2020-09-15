@@ -226,6 +226,17 @@ class Server:
 
         self.send_keyboard(user_id, keyboard, message, True)
 
+    def send_keyboard_settings(self, user_id, message):
+        keyboard = file_system.read('keyboards')['SETTINGS_MENU']
+        push = file_system.read('vk_users')[user_id]['push']
+
+        keyboard['buttons'][1][0][1] = "GREEN" if push[0] == 1 else "WHITE"
+        keyboard['buttons'][1][1][1] = "GREEN" if push[1] == 1 else "WHITE"
+        keyboard['buttons'][2][0][1] = "GREEN" if push[2] == 1 else "WHITE"
+        keyboard['buttons'][2][1][1] = "GREEN" if push[3] == 1 else "WHITE"
+
+        self.send_keyboard(user_id, keyboard, message, True)
+
     def start(self):
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
@@ -300,8 +311,14 @@ class Server:
                         elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][2][0][0]:
                             file_system.update_user(str(data['from_id']), 'state',
                                                     file_system.read('states')['IDLE_SETTINGS'])
-                            self.send_keyboard(data['from_id'], 'SETTINGS_MENU', 'Чтобы вернуться обратно нажмите '
-                                                                                 'кнопку \"Назад\"')
+                            self.send_keyboard_settings(str(data['from_id']), 'Чтобы вернуться обратно нажмите '
+                                                                              'кнопку \"Назад\"')
+
+                        elif data['text'] == file_system.read('keyboards')['MENU']['buttons'][1][1][0]:
+                            file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['GAME'])
+                            self.send_keyboard(data['from_id'], 'GAME', 'Я загадаю случайное число от 1 до 5, и если '
+                                                                        'ты его угадаешь, то получишь 4 монеты, '
+                                                                        'а если не угадаешь, то проиграешь 1 монету')
 
                     elif int(user['state']) == file_system.read('states')['IDLE_TABLE']:
                         if data['text'] == file_system.read('keyboards')['TABLE_MENU']['buttons'][2][0][0]:
@@ -327,6 +344,13 @@ class Server:
                             self.send(data['from_id'], file_system.read('messages')['IDLE_TABLE_WRONG'])
 
                     elif int(user['state']) == file_system.read('states')['IDLE_SETTINGS']:
+                        settings_buttons = [
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][1][0][0],
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][1][1][0],
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][2][0][0],
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][2][1][0]
+                        ]
+
                         if data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][0][0]:
                             file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
                             self.send_keyboard(data['from_id'], 'MENU', 'Вы успешно вернулись в меню')
@@ -337,11 +361,19 @@ class Server:
                             self.send_keyboard_minutes(str(data['from_id']), 'Чтобы вернуться назад нажмит кнопку '
                                                                              '\"Назад\"')
 
+                        elif data['text'] in settings_buttons:
+                            push = file_system.read('vk_users')[str(data['from_id'])]['push']
+                            push_index = settings_buttons.index(data['text'])
+                            push[push_index] = 1 if push[push_index] == 0 else 0
+
+                            file_system.update_user(str(data['from_id']), 'push', push)
+                            self.send_keyboard_settings(str(data['from_id']), 'Вы успешно изменили настройки')
+
                     elif int(user['state']) == file_system.read('states')['IDLE_SETTINGS_MINUTES']:
                         if data['text'] == file_system.read('keyboards')['MINUTES_MENU']['buttons'][2][0][0]:
                             file_system.update_user(str(data['from_id']), 'state',
                                                     file_system.read('states')['IDLE_SETTINGS'])
-                            self.send_keyboard(data['from_id'], 'SETTINGS_MENU', 'Вы успешно вернулись в настройки')
+                            self.send_keyboard_settings(str(data['from_id']), 'Вы успешно вернулись в настройки')
 
                         elif data['text'] in file_system.read('commands')['minute_select']:
                             user_push = file_system.read('vk_users')[str(data['from_id'])]['push']
