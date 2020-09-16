@@ -24,6 +24,15 @@ def write(filename, value):
         return 0
 
 
+def add_junk(value):
+    try:
+        file = read('junk')
+        file.append(str(value))
+        write('junk', file)
+
+    except FileNotFoundError:
+        log('log', '[error] Ошибка, файл не найден')
+
 def new_user(user_id):
     try:
         users = read('vk_users')

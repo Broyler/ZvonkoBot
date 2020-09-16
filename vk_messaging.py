@@ -17,7 +17,7 @@ class Server:
         self.vk_api = self.vk.get_api()
 
     def send(self, user_id, message):
-        self.vk_api.messages.send(
+        return self.vk_api.messages.send(
             peer_id=user_id,
             message=message,
             random_id=randint(-1000, 1000)
@@ -171,7 +171,10 @@ class Server:
             else:
                 message = file_system.read('messages')['LESSON_NEXT_FINISHED']
 
-        self.send(user_id, message)
+        return self.send(user_id, message)
+
+    def delete_junk(self):
+        self.vk_api.messages.delete(message_ids=file_system.read('junk'), delete_for_all=1)
 
     def send_table_tomorrow(self, user_id):
         user = file_system.read('vk_users').get(str(user_id))

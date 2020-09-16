@@ -41,7 +41,8 @@ while True:
 
                 for call in file_system.read('calls')[str(user['class'])]['to_lesson']:
                     if call == time:
-                        vk_messaging.Server().send(user_id, choice(file_system.read('messages')['TO_LESSON']))
+                        msg = vk_messaging.Server().send(user_id, choice(file_system.read('messages')['TO_LESSON']))
+                        file_system.add_junk(str(msg))
                         break
 
             if user['push'][2] == 1:
@@ -51,7 +52,8 @@ while True:
 
                 for call in file_system.read('calls')[str(user['class'])]['from_lesson']:
                     if call == time:
-                        vk_messaging.Server().send(user_id, choice(file_system.read('messages')['FROM_LESSON']))
+                        msg = vk_messaging.Server().send(user_id, choice(file_system.read('messages')['FROM_LESSON']))
+                        file_system.add_junk(str(msg))
                         break
 
     sleep(60)

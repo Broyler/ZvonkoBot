@@ -13,6 +13,7 @@ json/vk_users.json
 const/settings.py
 .idea/
 logs/
+test.py
 build/
 develop-eggs/
 dist/
