@@ -119,7 +119,7 @@ class Server:
         message = ''
 
         for day in table:
-            message += file_system.read('messages')['WEEKDAYS'][datetime.datetime.now().weekday()] + '\n'
+            message += file_system.read('messages')['WEEKDAYS'][table.index(day)] + '\n'
 
             for lesson in day:
                 temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
