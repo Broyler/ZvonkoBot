@@ -10,6 +10,17 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
+# Todo: мульти-выбор минут
+
+# Todo: o лидеры в игре кликабельные
+# Todo: o рассылка
+# Todo: o сделать очистку по таймеру
+# Todo: o "звонок" после уроков
+# Todo: o Расписание уроков на Пятница -> Пятница
+# Todo: o клавиатура настроек после смены класса
+# Todo: o подтверждение корпуса
+
+
 class Server:
     def __init__(self):
         self.vk = vk_api.VkApi(token=settings.vk_api_token)
@@ -186,7 +197,7 @@ class Server:
 
         else:
             weekday += 1
-            prefix = 'Расписание уроков на ' + file_system.read('messages')['WEEKDAYS'][weekday] + '\n\n'
+            prefix = file_system.read('messages')['WEEKDAYS'][weekday] + '\n\n'
 
         table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
         message = prefix
@@ -253,6 +264,10 @@ class Server:
                     file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' сбросил пользователей.')
                     file_system.write('vk_users', {})
 
+                elif data['text'].split()[0] == 'admin:send_all':
+                    for user_id in file_system.read('vk_users'):
+                        self.send(user_id, str(' '.join(data['text'].split()[1::])))
+
                 if str(data['from_id']) in file_system.read('vk_users'):
                     user = file_system.read('vk_users').get(str(data['from_id']))
 
@@ -294,8 +309,7 @@ class Server:
                             file_system.update_user(str(data['from_id']), 'letter', data['text'])
                             file_system.update_user(str(data['from_id']), 'state',
                                                     file_system.read('states')['IDLE_SETTINGS'])
-                            self.send_keyboard(data['from_id'], "SETTINGS_MENU",
-                                               'Вы успешно изменили свой класс')
+                            self.send_keyboard_settings(data['from_id'], 'Вы успешно изменили свой класс')
 
                         else:
                             self.send(data['from_id'], file_system.read('messages')['REGISTER_WRONG_LETTER'])
@@ -448,13 +462,16 @@ class Server:
 
                             for score in scores:
                                 user_data = self.vk_api.users.get(user_ids=score[1])[0]
-                                msg += str(scores.index(score) + 1) + ' - ' + user_data['first_name'] + ' ' + \
-                                    user_data['last_name'] + ': ' + str(score[0]) + ' монет\n'
+                                msg += str(scores.index(score) + 1) + ' место - @id' + str(score[1]) + ' (' + \
+                                       user_data['first_name'] + ' ' + user_data['last_name'] + ') : ' + \
+                                       str(score[0]) + ' монет\n'
 
                             self.send(data['from_id'], msg)
 
                 else:
                     file_system.log('users', 'Зарегистрирован ID ' + str(data['from_id']))
+                    self.send(data['from_id'], 'Внимание! Бот работает только в 1 корпусе школы 1519.\nПеред '
+                                               'использованием, убедитесь что вы обучаетесь именно в 1 корпусе.')
                     file_system.new_user(str(data['from_id']))
                     self.send_keyboard(
                         data['from_id'],
