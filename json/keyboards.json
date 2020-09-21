@@ -14,13 +14,30 @@
     ]
   },
 
+  "REGISTER_CLASS_FULL": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["5", "BLUE"],
+        ["6", "BLUE"],
+        ["7", "BLUE"]
+      ],
+      [
+        ["8", "BLUE"],
+        ["9", "BLUE"],
+        ["10", "BLUE"]
+      ],
+      [
+        ["11", "BLUE"]
+      ]
+    ]
+  },
+
   "REGISTER_PUSH": {
     "one_time": false,
     "buttons": [
       [
-        ["Да \uD83D\uDD14", "GREEN"]
-      ],
-      [
+        ["Да \uD83D\uDD14", "GREEN"],
         ["Нет \uD83D\uDD15", "RED"]
       ]
     ]
@@ -31,6 +48,16 @@
     "buttons": []
   },
 
+  "BUILDING_1519": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["1 корпус", "BLUE"],
+        ["7 корпус", "BLUE"]
+      ]
+    ]
+  },
+
   "MENU": {
     "one_time": false,
     "buttons": [
@@ -39,8 +66,7 @@
         ["⏭ Следующий урок", "GREEN"]
       ],
       [
-        ["\uD83D\uDDD3 Расписание", "WHITE"],
-        ["\uD83C\uDFB2 Игры", "WHITE"]
+        ["\uD83D\uDDD3 Расписание", "WHITE"]
       ],
       [
         ["⚙ Настройки", "BLUE"]

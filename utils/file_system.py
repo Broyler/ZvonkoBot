@@ -33,11 +33,13 @@ def add_junk(value):
     except FileNotFoundError:
         log('log', '[error] Ошибка, файл не найден')
 
+
 def new_user(user_id):
     try:
         users = read('vk_users')
         users[user_id] = {
-            "state": read('states').get('REGISTER_CLASS'),
+            "state": read('states').get('REGISTER_BUILDING'),
+            "table": False,
             "class": 8,
             "letter": "а",
             "push": [1, 0, 1, 0, 2],

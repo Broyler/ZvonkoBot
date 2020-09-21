@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+cloud-key.json
 json/admins.json
 json/vk_users.json
 const/settings.py
