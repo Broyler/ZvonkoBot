@@ -18,10 +18,10 @@
     "one_time": false,
     "buttons": [
       [
-        ["Да", "GREEN"]
+        ["Да \uD83D\uDD14", "GREEN"]
       ],
       [
-        ["Нет", "RED"]
+        ["Нет \uD83D\uDD15", "RED"]
       ]
     ]
   },
@@ -35,15 +35,15 @@
     "one_time": false,
     "buttons": [
       [
-        ["Уроки сегодня", "GREEN"],
-        ["Следующий урок", "GREEN"]
+        ["⏰ Уроки сегодня", "GREEN"],
+        ["⏭ Следующий урок", "GREEN"]
       ],
       [
-        ["Расписание", "BLUE"],
-        ["Игры", "WHITE"]
+        ["\uD83D\uDDD3 Расписание", "WHITE"],
+        ["\uD83C\uDFB2 Игры", "WHITE"]
       ],
       [
-        ["Настройки", "WHITE"]
+        ["⚙ Настройки", "BLUE"]
       ]
     ]
   },
@@ -53,7 +53,7 @@
     "buttons": [
       [
         ["Уроки завтра", "BLUE"],
-        ["Звонки", "GREEN"]
+        ["\uD83D\uDECE Звонки", "GREEN"]
       ],
       [
         ["Уроки на неделю", "BLUE"]
@@ -99,6 +99,37 @@
       ],
       [
         ["Назад", "RED"]
+      ]
+    ]
+  },
+
+  "SCHOOL_REGISTER": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["1519", "BLUE"]
+      ]
+    ]
+  },
+
+  "CONFIRM": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["Да", "GREEN"]
+      ],
+      [
+        ["Нет", "RED"]
+      ]
+    ]
+  },
+
+  "BUILDING_CHOOSE": {
+    "one_time": false,
+    "buttons": [
+      [
+        ["1 корпус", "BLUE"],
+        ["7 корпус", "BLUE"]
       ]
     ]
   },

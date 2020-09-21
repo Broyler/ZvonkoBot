@@ -11,6 +11,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
 # Todo: мульти-выбор минут
+# Todo: +другие корпуса
 
 # Todo: o лидеры в игре кликабельные
 # Todo: o рассылка
@@ -106,6 +107,8 @@ class Server:
                 str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute))
             ]
 
+            temp_emoji = ''
+
             for time_index, element in enumerate(times):
                 if element[-2] == ':':
                     times[time_index] = element[0:-2] + ':0' + element[-1]
@@ -113,14 +116,22 @@ class Server:
                 if element[1] == ':':
                     times[time_index] = '0' + times[time_index]
 
-            temp_message = times[0] + ' - ' + temp_message + '\n'
+                if times[2] < file_system.read('calls')[str(user['class'])]['from_lesson'][-1] and times[1] <= times[2]\
+                        <= str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index + 1]):
+                    temp_emoji = file_system.read('messages')['EMOJI']['LESSON_WAIT']
 
-            if times[2] >= times[1]:
-                for char in temp_message:
-                    message += '&#0822;' + char
+                elif times[2] > times[1]:
+                    temp_emoji = file_system.read('messages')['EMOJI']['LESSON_COMPLETE']
 
-            else:
-                message += temp_message
+                elif times[0] <= times[2] <= times[1]:
+                    temp_emoji = file_system.read('messages')['EMOJI']['LESSON_NOW']
+
+                else:
+                    temp_emoji = file_system.read('messages')['EMOJI']['LESSON_INCOMING']
+
+            temp_message = str(lesson_index + 1) + ') ' + temp_emoji + ' ' + temp_message + '\n'
+
+            message += temp_message
 
         self.send(user_id, message)
 
@@ -463,8 +474,8 @@ class Server:
                             for score in scores:
                                 user_data = self.vk_api.users.get(user_ids=score[1])[0]
                                 msg += str(scores.index(score) + 1) + ' место - @id' + str(score[1]) + ' (' + \
-                                       user_data['first_name'] + ' ' + user_data['last_name'] + ') : ' + \
-                                       str(score[0]) + ' монет\n'
+                                    user_data['first_name'] + ' ' + user_data['last_name'] + ') : ' + str(score[0]) \
+                                    + ' монет\n'
 
                             self.send(data['from_id'], msg)
 
