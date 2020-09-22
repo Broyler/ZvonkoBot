@@ -304,7 +304,11 @@ class Server:
 
                 elif data['text'].split()[0] == 'admin:send_all':
                     for user_id in file_system.read('vk_users'):
-                        self.send(user_id, str(' '.join(data['text'].split()[1::])))
+                        try:
+                            self.send(user_id, str(' '.join(data['text'].split()[1::])))
+
+                        except:
+                            print('error')
 
                 if str(data['from_id']) in file_system.read('vk_users'):
                     user = file_system.read('vk_users').get(str(data['from_id']))
