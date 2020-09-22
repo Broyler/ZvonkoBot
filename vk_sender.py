@@ -21,7 +21,10 @@ while True:
         user = users[user_id]
 
         if user['state'] != 20 and user['state'] != 21 and user['state'] != 22:
-            if file_system.read('calls')[str(user['class'])]['from_lesson'][len(file_system.read('table')[str(user['class'])][user['letter']][dt.weekday()])-1] > str(dt.hour) + ':' + str(dt.minute):
+            if file_system.read('calls')[str(user['class'])]['from_lesson'][len(file_system.read('table')
+                                                                            [str(user['class'])][user['letter']]
+                                                                                [dt.weekday()])-1] \
+                    > str(dt.hour) + ':' + str(dt.minute):
                 if user['push'][0] == 1:
                     minute = dt.minute + user['push'][4]
                     hour = dt.hour

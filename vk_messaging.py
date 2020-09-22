@@ -374,6 +374,7 @@ class Server:
 
                         elif data['text'] == file_system.read('keyboards')['REGISTER_PUSH']['buttons'][0][1][0]:
                             push_set = True
+                            file_system.update_user(str(data['from_id']), 'push', [0, 0, 0, 0, 2])
 
                         else:
                             self.send(data['from_id'], file_system.read('messages')['REGISTER_WRONG_PUSH'])
@@ -456,7 +457,7 @@ class Server:
                         elif data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][0][0][0]:
                             file_system.update_user(str(data['from_id']), 'state',
                                                     file_system.read('states')['IDLE_SETTINGS_MINUTES'])
-                            self.send_keyboard_minutes(str(data['from_id']), 'Чтобы вернуться назад нажмит кнопку '
+                            self.send_keyboard_minutes(str(data['from_id']), 'Чтобы вернуться назад нажмите кнопку '
                                                                              '\"Назад\"')
 
                         elif data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][0][0]:
