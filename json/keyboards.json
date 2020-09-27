@@ -45,7 +45,9 @@
 
   "EMPTY": {
     "one_time": true,
-    "buttons": []
+    "buttons": [
+
+    ]
   },
 
   "BUILDING_1519": {

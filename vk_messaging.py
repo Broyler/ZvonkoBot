@@ -1,5 +1,5 @@
 from const import settings, color_values
-from utils import file_system
+from utils import file_system, tools
 
 from random import randint
 from sys import exit
@@ -22,8 +22,6 @@ SESSION_ID = 'random'
 session_client = dialogflow.SessionsClient()
 session = session_client.session_path(DIALOGFLOW_PROJECT_ID, SESSION_ID)
 
-
-# Todo: +другие корпуса
 
 # Todo: --> мульти-выбор минут
 
@@ -56,6 +54,14 @@ class Server:
             peer_id=user_id,
             message=message,
             keyboard=keyboard.get_keyboard(),
+            random_id=randint(-100000, 100000)
+        )
+
+    def clear_keyboard(self, user_id, message):
+        self.vk_api.messages.send(
+            peer_id=user_id,
+            message=message,
+            keyboard=VkKeyboard.get_empty_keyboard(),
             random_id=randint(-100000, 100000)
         )
 
@@ -103,30 +109,27 @@ class Server:
 
         if user['table']:
             weekday = datetime.datetime.now().weekday()
-            today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
 
-            message = ''
+            if weekday <= 4:
+                today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
 
-            for lesson_index, lesson in enumerate(today_table):
-                temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
-                times = [
-                    str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index]),
-                    str(file_system.read('calls')[str(user['class'])]['from_lesson'][lesson_index]),
-                    str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute))
-                ]
+                message = ''
 
-                temp_emoji = ''
+                for lesson_index, lesson in enumerate(today_table):
+                    temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
+                    times = [
+                        str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index]),
+                        str(file_system.read('calls')[str(user['class'])]['from_lesson'][lesson_index]),
+                        str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute))
+                    ]
 
-                for time_index, element in enumerate(times):
-                    if element[-2] == ':':
-                        times[time_index] = element[0:-2] + ':0' + element[-1]
-
-                    if element[1] == ':':
-                        times[time_index] = '0' + times[time_index]
+                    for i in range(len(times)):
+                        times[i] = tools.time(times[i])
 
                     if times[2] < file_system.read('calls')[str(user['class'])]['from_lesson'][-1] and times[1] <= \
                             times[2] \
-                            <= str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index + 1]):
+                            <= tools.time(str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index+1])) \
+                            or times[2] <= tools.time(str(file_system.read('calls')[str(user['class'])]['to_lesson'][0])):
                         temp_emoji = file_system.read('messages')['EMOJI']['LESSON_WAIT']
 
                     elif times[2] > times[1]:
@@ -138,9 +141,12 @@ class Server:
                     else:
                         temp_emoji = file_system.read('messages')['EMOJI']['LESSON_INCOMING']
 
-                temp_message = str(lesson_index + 1) + ') ' + temp_emoji + ' ' + temp_message + '\n'
+                    temp_message = str(lesson_index + 1) + ') ' + temp_emoji + ' ' + temp_message + '\n'
 
-                message += temp_message
+                    message += temp_message
+
+            else:
+                message = 'Сегодня нет уроков!'
 
             self.send(user_id, message)
 
@@ -555,8 +561,8 @@ class Server:
                             for score in scores:
                                 user_data = self.vk_api.users.get(user_ids=score[1])[0]
                                 msg += str(scores.index(score) + 1) + ' место - @id' + str(score[1]) + ' (' + \
-                                       user_data['first_name'] + ' ' + user_data['last_name'] + ') : ' + str(score[0]) \
-                                       + ' монет\n'
+                                    user_data['first_name'] + ' ' + user_data['last_name'] + ') : ' + str(score[0]) \
+                                    + ' монет\n'
 
                             self.send(data['from_id'], msg)
 

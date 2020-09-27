@@ -12,8 +12,8 @@
 
   "EMOJI": {
     "LESSON_COMPLETE": "&#128308;",
-    "LESSON_WAIT": "\uD83D\uDFE1",
-    "LESSON_NOW": "\uD83D\uDFE2",
+    "LESSON_WAIT": "⏳",
+    "LESSON_NOW": "\uD83D\uDCA1",
     "LESSON_INCOMING": "&#9898;"
   },
 
