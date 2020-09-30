@@ -26,7 +26,7 @@ def write(filename, value):
 
 def add_junk(value):
     try:
-        file = read('junk')
+        file = list(read('junk'))
         file.append(str(value))
         write('junk', file)
 

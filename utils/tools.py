@@ -1,3 +1,6 @@
+import os
+
+
 def time(now):
     slices = now.split(':')
     out = ''
@@ -17,3 +20,8 @@ def time(now):
         out += slices[1]
 
     return out
+
+
+def temp():
+    return int(float(os.popen('vcgencmd measure_temp').read()[5:-3]))
+    

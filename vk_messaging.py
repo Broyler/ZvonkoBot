@@ -114,7 +114,7 @@ class Server:
                 today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
 
                 message = ''
-
+                
                 for lesson_index, lesson in enumerate(today_table):
                     temp_message = lesson if type(lesson) == str else lesson[0] + ', ' + lesson[1]
                     times = [
@@ -126,16 +126,16 @@ class Server:
                     for i in range(len(times)):
                         times[i] = tools.time(times[i])
 
-                    if times[2] < file_system.read('calls')[str(user['class'])]['from_lesson'][-1] and times[1] <= \
+                    if times[2] < file_system.read('calls')[str(user['class'])]['from_lesson'][-1] and tools.time(str(file_system.read('calls')[str(user['class'])]['from_lesson'][lesson_index-1]))<= \
                             times[2] \
-                            <= tools.time(str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index+1])) \
-                            or times[2] <= tools.time(str(file_system.read('calls')[str(user['class'])]['to_lesson'][0])):
+                            <= times[0] \
+                            or (lesson_index == 0 and times[2] < tools.time(str(file_system.read('calls')[str(user['class'])]['to_lesson'][0]))):
                         temp_emoji = file_system.read('messages')['EMOJI']['LESSON_WAIT']
 
-                    elif times[2] > times[1]:
+                    elif times[2] >= times[1]:
                         temp_emoji = file_system.read('messages')['EMOJI']['LESSON_COMPLETE']
 
-                    elif times[0] <= times[2] <= times[1]:
+                    elif times[0] <= times[2] < times[1]:
                         temp_emoji = file_system.read('messages')['EMOJI']['LESSON_NOW']
 
                     else:
@@ -181,42 +181,48 @@ class Server:
             weekday = datetime.datetime.now().weekday()
             today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
             message = ''
-
-            for lesson_index, lesson in enumerate(today_table):
-                times = [
-                    str(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_index]),
-                    str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute))
-                ]
-
-                for time_index, element in enumerate(times):
-                    if element[-2] == ':':
-                        times[time_index] = element[0:-2] + ':0' + element[-1]
-
-                    if element[1] == ':':
-                        times[time_index] = '0' + times[time_index]
-
-                hour_dist = int(times[0].split(':')[0]) - int(times[1].split(':')[0])
-                minute_dist = int(times[0].split(':')[1]) - int(times[1].split(':')[1])
-
-                if hour_dist <= 0 and minute_dist >= 0:
-                    time_msg = str(minute_dist) + ' мин.'
-
-                else:
-                    time_msg = str(hour_dist) + ' ч. ' + str(minute_dist) + ' мин.'
-
-                if hour_dist >= 0 and minute_dist >= 0:
-                    if type(lesson) == list:
-                        message = 'Урок ' + lesson[0] + ', ' + lesson[1] + ' начнется через ' + time_msg
-
-                    else:
-                        message = 'Урок ' + lesson + ', ' + \
-                                  str(file_system.read('classrooms')[str(user['class'])][user['letter']]) + \
-                                  ' начнется через ' + time_msg
-
-                    break
-
-                else:
-                    message = file_system.read('messages')['LESSON_NEXT_FINISHED']
+            time_now = tools.time(str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute)))
+            lesson_count = len(file_system.read('table')[str(user['class'])][user['letter']][weekday]) - 1
+            lesson_end = tools.time(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_count])
+            
+            if time_now >= lesson_end:
+                message = file_system.read('messages')['LESSON_NEXT_FINISHED']
+                
+            else:
+                for call_index, call in enumerate(file_system.read('calls')[str(user['class'])]['to_lesson']):
+                    call = tools.time(call)
+                    if time_now < call:
+                        temp_lesson = file_system.read('table')[str(user['class'])][user['letter']][weekday][call_index]
+                        if type(temp_lesson) == list:
+                            temp_lesson = temp_lesson[0]
+                            temp_cab = temp_lesson[1]
+                            temp_hour = call.split(':')[0]
+                            
+                        else:
+                            temp_cab = file_system.read('classrooms')[str(user['class'])][user['letter']]
+                            
+                        temp_now = [int(time_now.split(':')[0]), int(time_now.split(':')[1])]
+                        temp_call = [int(call.split(':')[0]), int(call.split(':')[1])]
+                        
+                        if temp_now[0] < temp_call[0] or temp_now[1] < temp_call[1]:
+                            temp_now, temp_call = temp_call, temp_now
+                            
+                        if temp_now[0] != temp_call[0]:
+                            if temp_now[1] < temp_call[1]:
+                                temp_now[0] -= 1
+                                temp_now[1] += 60
+                                
+                        temp_hour = temp_now[0] - temp_call[0]
+                        temp_min = temp_now[1] - temp_call[1]
+                        
+                        message = 'Урок ' + str(temp_lesson) + ', ' + str(temp_cab) + ' начнётся через '
+                        
+                        if temp_hour > 0:
+                            message += str(temp_hour) + 'ч. '
+                            
+                        message += str(temp_min) + 'мин.'
+                        
+                        break
 
             return self.send(user_id, message)
 
@@ -224,7 +230,8 @@ class Server:
             return self.send(user_id, file_system.read('messages')['NOT_AVAILABLE'])
 
     def delete_junk(self):
-        self.vk_api.messages.delete(message_ids=file_system.read('junk'), delete_for_all=1)
+        self.vk_api.messages.delete(message_ids=list(file_system.read('junk')), delete_for_all=1)
+        file_system.write('junk', [])
 
     def send_table_tomorrow(self, user_id):
         user = file_system.read('vk_users').get(str(user_id))
@@ -307,6 +314,17 @@ class Server:
                 elif data['text'] == 'admin:reset_users' and data['from_id'] in file_system.read('admins'):
                     file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' сбросил пользователей.')
                     file_system.write('vk_users', {})
+                    continue
+                    
+                elif data['text'] == 'admin:delete_junk' and data['from_id'] in file_system.read('admins'):
+                    file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' deleted junk')
+                    self.delete_junk()
+                    self.send(data['from_id'], 'Junk has been deleted')
+                    continue
+                    
+                elif data['text'] == 'admin:measure_temp' and data['from_id'] in file_system.read('admins'):
+                    self.send(data['from_id'], 'Temp: ' + str(tools.temp()) + '°C')
+                    continue
 
                 elif data['text'].split()[0] == 'admin:send_all':
                     for user_id in file_system.read('vk_users'):
@@ -315,6 +333,7 @@ class Server:
 
                         except:
                             print('error')
+                    continue
 
                 if str(data['from_id']) in file_system.read('vk_users'):
                     user = file_system.read('vk_users').get(str(data['from_id']))
