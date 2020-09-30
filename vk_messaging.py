@@ -126,10 +126,13 @@ class Server:
                     for i in range(len(times)):
                         times[i] = tools.time(times[i])
 
-                    if times[2] < file_system.read('calls')[str(user['class'])]['from_lesson'][-1] and tools.time(str(file_system.read('calls')[str(user['class'])]['from_lesson'][lesson_index-1]))<= \
+                    if times[2] < file_system.read('calls')[str(user['class'])]['from_lesson'][-1] and \
+                            tools.time(str(file_system.read('calls')[str(user['class'])]['from_lesson']
+                                           [lesson_index-1])) <= \
                             times[2] \
                             <= times[0] \
-                            or (lesson_index == 0 and times[2] < tools.time(str(file_system.read('calls')[str(user['class'])]['to_lesson'][0]))):
+                            or (lesson_index == 0 and times[2] < tools.time(str(file_system.read('calls')
+                                                                                [str(user['class'])]['to_lesson'][0]))):
                         temp_emoji = file_system.read('messages')['EMOJI']['LESSON_WAIT']
 
                     elif times[2] >= times[1]:
@@ -179,7 +182,6 @@ class Server:
 
         if user['table']:
             weekday = datetime.datetime.now().weekday()
-            today_table = file_system.read('table')[str(user['class'])][user['letter']][weekday]
             message = ''
             time_now = tools.time(str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute)))
             lesson_count = len(file_system.read('table')[str(user['class'])][user['letter']][weekday]) - 1
@@ -193,10 +195,10 @@ class Server:
                     call = tools.time(call)
                     if time_now < call:
                         temp_lesson = file_system.read('table')[str(user['class'])][user['letter']][weekday][call_index]
+
                         if type(temp_lesson) == list:
-                            temp_lesson = temp_lesson[0]
                             temp_cab = temp_lesson[1]
-                            temp_hour = call.split(':')[0]
+                            temp_lesson = temp_lesson[0]
                             
                         else:
                             temp_cab = file_system.read('classrooms')[str(user['class'])][user['letter']]
@@ -331,8 +333,9 @@ class Server:
                         try:
                             self.send(user_id, str(' '.join(data['text'].split()[1::])))
 
-                        except:
-                            print('error')
+                        except vk_api.exceptions.ApiError:
+                            file_system.log('log', '[warning] Не удалось отправить рассылку для ID: ' + str(user_id))
+
                     continue
 
                 if str(data['from_id']) in file_system.read('vk_users'):

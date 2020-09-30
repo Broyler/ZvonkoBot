@@ -30,10 +30,12 @@ while True:
         try:
             user = users[user_id]
 
-            if user['state'] != 20 and user['state'] != 21 and user['state'] != 22 and user['state'] != file_system.read('states').get('REGISTER_BUILDING'):
-                if not user['table'] or file_system.read('calls')[str(user['class'])]['from_lesson'][len(file_system.read('table')
-                                                                                [str(user['class'])][user['letter']]
-                                                                                    [dt.weekday()])-1] \
+            if user['state'] != 20 and user['state'] != 21 and user['state'] != 22 and user['state'] != \
+                    file_system.read('states').get('REGISTER_BUILDING'):
+                if not user['table'] or file_system.read('calls')[str(user['class'])]['from_lesson'][len(
+                        file_system.read('table')
+                        [str(user['class'])][user['letter']]
+                        [dt.weekday()])-1] \
                         >= str(dt.hour) + ':' + str(dt.minute):
                     if user['push'][0] == 1:
                         minute = dt.minute + user['push'][4]
@@ -48,7 +50,8 @@ while True:
                         for call in file_system.read('calls')[str(user['class'])]['to_lesson']:
                             if call == time:
                                 if user['push'][3] == 0:
-                                    msg = vk_messaging.Server().send(user_id, choice(file_system.read('messages')['TO_LESSON']))
+                                    msg = vk_messaging.Server().send(user_id, choice(
+                                        file_system.read('messages')['TO_LESSON']))
                                     file_system.add_junk(str(msg))
 
                                 else:
@@ -64,7 +67,8 @@ while True:
 
                         for call in file_system.read('calls')[str(user['class'])]['to_lesson']:
                             if call == time:
-                                msg = vk_messaging.Server().send(user_id, choice(file_system.read('messages')['TO_LESSON']))
+                                msg = vk_messaging.Server().send(
+                                    user_id, choice(file_system.read('messages')['TO_LESSON']))
                                 file_system.add_junk(str(msg))
                                 break
 

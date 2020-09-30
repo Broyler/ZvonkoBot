@@ -1,4 +1,4 @@
-import os
+# import os
 
 
 def time(now):
@@ -23,5 +23,4 @@ def time(now):
 
 
 def temp():
-    return int(float(os.popen('vcgencmd measure_temp').read()[5:-3]))
-    
+    return 0  # int(float(os.popen('vcgencmd measure_temp').read()[5:-3]))
