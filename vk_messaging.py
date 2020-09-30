@@ -194,6 +194,8 @@ class Server:
                 for call_index, call in enumerate(file_system.read('calls')[str(user['class'])]['to_lesson']):
                     call = tools.time(call)
                     if time_now < call:
+                        temp_smile = file_system.read('messages')['DAYS'][call_index] + '  '
+
                         temp_lesson = file_system.read('table')[str(user['class'])][user['letter']][weekday][call_index]
 
                         if type(temp_lesson) == list:
@@ -217,7 +219,7 @@ class Server:
                         temp_hour = temp_now[0] - temp_call[0]
                         temp_min = temp_now[1] - temp_call[1]
                         
-                        message = 'Урок ' + str(temp_lesson) + ', ' + str(temp_cab) + ' начнётся через '
+                        message = temp_smile + 'Урок ' + str(temp_lesson) + ', ' + str(temp_cab) + ' начнётся через '
                         
                         if temp_hour > 0:
                             message += str(temp_hour) + 'ч. '
