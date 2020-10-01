@@ -23,9 +23,6 @@ session_client = dialogflow.SessionsClient()
 session = session_client.session_path(DIALOGFLOW_PROJECT_ID, SESSION_ID)
 
 
-# Todo: --> мульти-выбор минут
-
-
 class Server:
     def __init__(self):
         self.vk = vk_api.VkApi(token=settings.vk_api_token)
@@ -234,7 +231,12 @@ class Server:
             return self.send(user_id, file_system.read('messages')['NOT_AVAILABLE'])
 
     def delete_junk(self):
-        self.vk_api.messages.delete(message_ids=list(file_system.read('junk')), delete_for_all=1)
+        try:
+            self.vk_api.messages.delete(message_ids=list(file_system.read('junk')), delete_for_all=1)
+
+        except:
+            pass
+
         file_system.write('junk', [])
 
     def send_table_tomorrow(self, user_id):
@@ -314,6 +316,12 @@ class Server:
                 if data['text'] == 'admin:stop_bot' and data['from_id'] in file_system.read('admins'):
                     file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' остановил бота.')
                     exit(0)
+
+                elif data['text'] == 'admin:statistics' and data['from_id'] in file_system.read('admins'):
+                    msg = 'Подписчиков группы: ' + str(self.vk_api.groups.getMembers(
+                        group_id=settings.vk_group_id
+                    )['count']) + '\nПользователей: ' + str(len(file_system.read('vk_users')))
+                    self.send(data['from_id'], msg)
 
                 elif data['text'] == 'admin:reset_users' and data['from_id'] in file_system.read('admins'):
                     file_system.log('log', '[admin] Администратор ' + str(data['from_id']) + ' сбросил пользователей.')
