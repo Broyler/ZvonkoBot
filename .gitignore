@@ -12,10 +12,12 @@ cloud-key.json
 json/old_users.json
 json/admins.json
 json/vk_users.json
+json/junk.json
 const/settings.py
 venv/
 .idea/
-logs/
+logs/log.txt
+logs/users.txt
 test.py
 build/
 develop-eggs/
