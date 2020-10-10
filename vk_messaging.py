@@ -174,61 +174,73 @@ class Server:
         else:
             self.send(user_id, file_system.read('messages')['NOT_AVAILABLE'])
 
-    def send_lesson_next(self, user_id):
+    @staticmethod
+    def get_lesson_next(user_id):
         user = file_system.read('vk_users').get(str(user_id))
 
         if user['table']:
             weekday = datetime.datetime.now().weekday()
-            message = ''
-            time_now = tools.time(str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute)))
-            lesson_count = len(file_system.read('table')[str(user['class'])][user['letter']][weekday]) - 1
-            lesson_end = tools.time(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_count])
-            
-            if time_now >= lesson_end:
-                message = file_system.read('messages')['LESSON_NEXT_FINISHED']
-                
+
+            if weekday > 4:
+                message = file_system.read('messages')['WEEKEND']
+
             else:
-                for call_index, call in enumerate(file_system.read('calls')[str(user['class'])]['to_lesson']):
-                    call = tools.time(call)
-                    if time_now < call:
-                        temp_smile = file_system.read('messages')['DAYS'][call_index] + '  '
 
-                        temp_lesson = file_system.read('table')[str(user['class'])][user['letter']][weekday][call_index]
+                message = ''
+                time_now = tools.time(str(str(datetime.datetime.now().hour) + ':' + str(datetime.datetime.now().minute)))
+                lesson_count = len(file_system.read('table')[str(user['class'])][user['letter']][weekday]) - 1
+                lesson_end = tools.time(file_system.read('calls')[str(user['class'])]['to_lesson'][lesson_count])
 
-                        if type(temp_lesson) == list:
-                            temp_cab = temp_lesson[1]
-                            temp_lesson = temp_lesson[0]
-                            
-                        else:
-                            temp_cab = file_system.read('classrooms')[str(user['class'])][user['letter']]
-                            
-                        temp_now = [int(time_now.split(':')[0]), int(time_now.split(':')[1])]
-                        temp_call = [int(call.split(':')[0]), int(call.split(':')[1])]
-                        
-                        if temp_now[0] < temp_call[0] or temp_now[1] < temp_call[1]:
-                            temp_now, temp_call = temp_call, temp_now
-                            
-                        if temp_now[0] != temp_call[0]:
-                            if temp_now[1] < temp_call[1]:
-                                temp_now[0] -= 1
-                                temp_now[1] += 60
-                                
-                        temp_hour = temp_now[0] - temp_call[0]
-                        temp_min = temp_now[1] - temp_call[1]
-                        
-                        message = temp_smile + 'Урок ' + str(temp_lesson) + ', ' + str(temp_cab) + ' начнётся через '
-                        
-                        if temp_hour > 0:
-                            message += str(temp_hour) + 'ч. '
-                            
-                        message += str(temp_min) + 'мин.'
-                        
-                        break
+                if time_now >= lesson_end:
+                    message = file_system.read('messages')['LESSON_NEXT_FINISHED']
 
-            return self.send(user_id, message)
+                else:
+                    for call_index, call in enumerate(file_system.read('calls')[str(user['class'])]['to_lesson']):
+                        call = tools.time(call)
+                        if time_now < call:
+                            temp_smile = file_system.read('messages')['DAYS'][call_index] + '  '
+
+                            temp_lesson = file_system.read('table')[str(user['class'])][user['letter']][weekday][call_index]
+
+                            if type(temp_lesson) == list:
+                                temp_cab = temp_lesson[1]
+                                temp_lesson = temp_lesson[0]
+
+                            else:
+                                temp_cab = file_system.read('classrooms')[str(user['class'])][user['letter']]
+
+                            temp_now = [int(time_now.split(':')[0]), int(time_now.split(':')[1])]
+                            temp_call = [int(call.split(':')[0]), int(call.split(':')[1])]
+
+                            if temp_now[0] < temp_call[0] or temp_now[1] < temp_call[1]:
+                                temp_now, temp_call = temp_call, temp_now
+
+                            if temp_now[0] != temp_call[0]:
+                                if temp_now[1] < temp_call[1]:
+                                    temp_now[0] -= 1
+                                    temp_now[1] += 60
+
+                            temp_hour = temp_now[0] - temp_call[0]
+                            temp_min = temp_now[1] - temp_call[1]
+
+                            message = temp_smile + 'Урок ' + str(temp_lesson) + ', ' + str(temp_cab) + ' начнётся через '
+
+                            if temp_hour > 0:
+                                message += str(temp_hour) + 'ч. '
+
+                            message += str(temp_min) + 'мин.'
+
+                            break
 
         else:
-            return self.send(user_id, file_system.read('messages')['NOT_AVAILABLE'])
+            message = file_system.read('messages')['NOT_AVAILABLE']
+
+        return message
+
+    def send_lesson_next(self, user_id):
+        message = self.get_lesson_next(user_id)
+
+        return self.send(user_id, message)
 
     def delete_junk(self):
         try:
@@ -271,8 +283,8 @@ class Server:
         message = ''
 
         for lesson_index in range(1, len(calls['to_lesson']) + 1):
-            message += str(lesson_index) + ' урок ' + calls['to_lesson'][lesson_index - 1] + \
-                       '-' + calls['from_lesson'][lesson_index - 1] + '\n'
+            message += str(lesson_index) + ' урок ' + tools.time(calls['to_lesson'][lesson_index - 1]) + \
+                       '-' + tools.time(calls['from_lesson'][lesson_index - 1]) + '\n'
 
         self.send(user_id, message)
 
@@ -298,13 +310,24 @@ class Server:
         self.send_keyboard(user_id, keyboard, message, True)
 
     def send_keyboard_settings(self, user_id, message):
-        keyboard = file_system.read('keyboards')['SETTINGS_MENU']
-        push = file_system.read('vk_users')[str(user_id)]['push']
+        user = file_system.read('vk_users')[str(user_id)]
+        keyboard = dict(file_system.read('keyboards')['SETTINGS_MENU'])
+        push = user['push']
 
-        keyboard['buttons'][1][0][1] = "GREEN" if push[0] == 1 else "WHITE"
-        keyboard['buttons'][1][1][1] = "GREEN" if push[1] == 1 else "WHITE"
-        keyboard['buttons'][2][0][1] = "GREEN" if push[2] == 1 else "WHITE"
-        keyboard['buttons'][2][1][1] = "GREEN" if push[3] == 1 else "WHITE"
+        if user['table']:
+            keyboard['buttons'][1][0][1] = "GREEN" if push[0] == 1 else "WHITE"
+            keyboard['buttons'][1][1][1] = "GREEN" if push[1] == 1 else "WHITE"
+            keyboard['buttons'][2][0][1] = "GREEN" if push[2] == 1 else "WHITE"
+            keyboard['buttons'][2][1][1] = "GREEN" if push[3] == 1 else "WHITE"
+
+        else:
+            keyboard['buttons'][1][0][1] = "GREEN" if push[0] == 1 else "WHITE"
+            keyboard['buttons'][1][1][1] = "GREEN" if push[1] == 1 else "WHITE"
+            keyboard['buttons'][2][0][1] = "GREEN" if push[2] == 1 else "WHITE"
+            temp_a = [keyboard['buttons'][2][0], keyboard['buttons'][3][0]]
+            keyboard['buttons'][2] = temp_a
+            temp_b = [keyboard['buttons'][3][1]]
+            keyboard['buttons'][3] = temp_b
 
         self.send_keyboard(user_id, keyboard, message, True)
 
@@ -422,6 +445,11 @@ class Server:
                             self.send(data['from_id'], file_system.read('messages')['REGISTER_WRONG_PUSH'])
 
                         if push_set:
+                            if not user['table']:
+                                new_push = file_system.read('vk_users')[str(data['from_id'])]['push']
+                                new_push[3] = 0
+                                file_system.update_user(str(data['from_id']), 'push', new_push)
+
                             file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])
                             self.send_keyboard(data['from_id'], 'MENU',
                                                file_system.read('messages')['REGISTER_COMPLETE'])
@@ -490,7 +518,10 @@ class Server:
                             file_system.read('keyboards')['SETTINGS_MENU']['buttons'][1][1][0],
                             file_system.read('keyboards')['SETTINGS_MENU']['buttons'][2][0][0],
                             file_system.read('keyboards')['SETTINGS_MENU']['buttons'][2][1][0]
-                        ]
+                        ] if user['table'] else [
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][1][0][0],
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][1][1][0],
+                            file_system.read('keyboards')['SETTINGS_MENU']['buttons'][2][0][0]]
 
                         if data['text'] == file_system.read('keyboards')['SETTINGS_MENU']['buttons'][3][1][0]:
                             file_system.update_user(str(data['from_id']), 'state', file_system.read('states')['IDLE'])

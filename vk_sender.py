@@ -102,11 +102,15 @@ while True:
                             for call in file_system.read('calls')[str(user['class'])]['from_lesson']:
                                 if call == time:
                                     if call == file_system.read('calls')[str(user['class'])]['from_lesson'][-1]:
-                                        msg = vk_messaging.Server().send(user_id, file_system.read('messages')['ENDLESSON'])
+                                        msg = vk_messaging.Server().send(user_id,
+                                                                         file_system.read('messages')['ENDLESSON'])
 
                                     else:
-                                        msg = vk_messaging.Server().send(user_id,
-                                                                     choice(file_system.read('messages')['FROM_LESSON']))
+                                        text = choice(file_system.read('messages')['FROM_LESSON']) + ' ' + \
+                                               vk_messaging.Server().get_lesson_next(user_id)
+                                        msg = vk_messaging.Server().send(
+                                            user_id,
+                                            text)
                                     file_system.add_junk(str(msg))
                                     break
 

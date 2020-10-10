@@ -42,7 +42,7 @@ def new_user(user_id):
             "table": False,
             "class": 8,
             "letter": "а",
-            "push": [1, 0, 1, 0, 2],
+            "push": [1, 1, 1, 1, 2],
             "coins": 10
         }
         write('vk_users', users)
